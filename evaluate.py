@@ -13,22 +13,24 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 def evaluate_model(model, test_loader, pca_model, weight_decay, save=True):
     PCA_features = []
     AE_features = []
-    labels = []
-    AE_distances = []
-
     wd_AE_features = []
+
+    AE_distances = []
     wd_AE_distances = []
 
+    labels = []
+
     for batch_features, batch_labels in test_loader:
+        # center data
         X = batch_features.view(-1, 784)
         X = X - X.mean(axis=0)
 
         print("[Calc] PCA")
         # PCA stuff
         U, S, Vh = torch.linalg.svd(X)
-
         batch_PCA_features = X @ Vh.T[:, :2]
 
+        # save PCA result
         PCA_features.append(batch_PCA_features)
         labels.append(batch_labels)
 
@@ -43,10 +45,11 @@ def evaluate_model(model, test_loader, pca_model, weight_decay, save=True):
         pca_model(X)
         wd_AE_batch_features = activation[0]
 
+        # do procrustes in order to align the PA and the AE embedding
         t = torch.tensor(generic(wd_AE_batch_features.cpu().numpy(), batch_PCA_features.cpu().numpy()).t)
-
         wd_AE_batch_features_transformed = wd_AE_batch_features.cpu() @ t
 
+        # calculate the distances of the AE embedding with and without weight-decay to the PCA solution
         wd_AE_batch_distance = (wd_AE_batch_features_transformed - batch_PCA_features).pow(2).sum(1).sqrt()
         AE_batch_distance = (batch_PCA_features - AE_batch_features.cpu()).pow(2).sum(1).sqrt()
 
@@ -61,6 +64,7 @@ def evaluate_model(model, test_loader, pca_model, weight_decay, save=True):
     wd_AE_features = torch.cat(wd_AE_features, dim=0)
     wd_AE_distances = torch.cat(wd_AE_distances, dim=0)
 
+    # calculate the mean distances and standard deviations of the distances
     mean_AE_distances = torch.mean(AE_distances)
     std_AE_distances = torch.std(AE_distances)
     mean_wd_AE_distances = torch.mean(wd_AE_distances)

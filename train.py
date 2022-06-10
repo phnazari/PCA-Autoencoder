@@ -5,8 +5,7 @@ import torchvision
 from matplotlib import pyplot as plt
 from torch import optim, nn
 
-from losses import pca_loss
-from models import activation
+from losses import wd_loss
 
 transform = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
 
@@ -20,12 +19,10 @@ train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=128, shuffl
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def train_model(model, model_path, epochs=50, weight_decay=0, save=True):
+def train_model(model, epochs=50, weight_decay=0):
     # initialize model
     # create optimizer object
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
-
-    # use mean-square-error as loss
 
     total_losses = []
     mse_losses = []
@@ -51,7 +48,7 @@ def train_model(model, model_path, epochs=50, weight_decay=0, save=True):
             outputs = model(batch_features)
 
             # compute training reconstruction loss. This is where the learning of identity happens
-            total_loss, mse_loss, weight_loss = pca_loss(model, outputs, batch_features, weight_decay=weight_decay)
+            total_loss, mse_loss, weight_loss = wd_loss(model, outputs, batch_features, weight_decay=weight_decay)
 
             # compute accumulated gradients
             total_loss.backward()
@@ -59,18 +56,14 @@ def train_model(model, model_path, epochs=50, weight_decay=0, save=True):
             # perform parameter update based on current gradients
             optimizer.step()
 
-            batch_total_loss += total_loss.item()
-            batch_mse_loss += mse_loss.item()
-            batch_weight_loss += weight_loss.item()
+            batch_total_loss += total_loss.detach().item()
+            batch_mse_loss += mse_loss.detach().item()
+            batch_weight_loss += weight_loss.detach().item()
             # add the mini-batch training loss to epoch loss
 
         total_losses.append(batch_total_loss)
         mse_losses.append(batch_mse_loss)
         weight_losses.append(batch_weight_loss)
-
-    if save:
-        # save trained model to file
-        torch.save(model.state_dict(), model_path)
 
     """
     Plotting

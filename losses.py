@@ -3,29 +3,24 @@ from torch import nn
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-alpha = 1e-4
-beta = .5
 
-
-def pca_loss(model, outputs, features, weight_decay):
+def wd_loss(model, outputs, features, weight_decay):
+    """
+    Custom loss that implements weight-decay
+    :param model: the model under consideration
+    :param outputs: the outputs of the forward pass
+    :param features: the inputs to the forward pass
+    :param weight_decay: the weight-decay-rate
+    :return: triple containing the total loss, the mse loss and the weight-decay loss
+    """
     crit = nn.MSELoss()
     base_loss = crit(outputs, features)
 
     E = model.encoder[0].weight
     D = model.decoder[0].weight
 
-    weight_loss = weight_decay/2 * (torch.linalg.norm(E)**2 + torch.linalg.norm(D)**2)
+    weight_loss = weight_decay / 2 * (torch.linalg.norm(E) ** 2 + torch.linalg.norm(D) ** 2)
 
     total_loss = base_loss + weight_loss
-
-    """
-    custom_loss_1 = 0
-    custom_loss_1 = - alpha * torch.linalg.norm(E[0] @ features.T) / torch.linalg.norm(E[0])
-
-    custom_loss_2 = 0
-    custom_loss_2 = - alpha * torch.linalg.norm(E[1] @ features.T) / torch.linalg.norm(E[1])
-    """
-
-    # TODO: implement the second principal component
 
     return total_loss, base_loss, weight_loss
