@@ -12,4 +12,3 @@ Mention that this is an embedding of MNIST
 Better title for images?!
 
 Have to set the base path in conf
-
