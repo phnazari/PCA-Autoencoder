@@ -1,14 +1,9 @@
-Making a linear AutoEncoder learn PCA by applying weight decay
+# Making a linear Autoencoder learn PCA
 
+As shown in the Appendix of ..., it can be shown that a **linear autoencoder** trained with weight-decay learns **PCA**.
 
-Add the images
+This is a library which trains a lineat autoencoder with and without weight-decay and compares the results. See for example the following image:
 
-Add description of what is the aim
+![comparison_good](https://user-images.githubusercontent.com/41115254/173034245-2b45b685-d8ca-4c65-916d-e477a40c5716.png)
 
-Create Image of the embeddings with labels?!
-
-Mention that this is an embedding of MNIST
-
-Better title for images?!
-
-Have to set the base path in conf
+From left to right one can see the embedding of MNIST into 2D latent space as done by a linear autoencoder trained only with MSE loss, by PCA and by a linear Autoencoder regularized via weight-decay.
