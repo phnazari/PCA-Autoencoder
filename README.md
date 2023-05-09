@@ -1,6 +1,6 @@
 # Making a linear Autoencoder learn PCA
 
-As shown in the Appendix of ..., it can be shown that a **linear autoencoder** trained with weight-decay learns **PCA**.
+As shown in the Appendix of the paper **Geometric Autoencoders - What You See is What You Decode**, it can be shown that a **linear autoencoder** trained with weight-decay learns **PCA**.
 
 This is a library which trains a lineat autoencoder with and without weight-decay and compares the results. See for example the following image:
 
